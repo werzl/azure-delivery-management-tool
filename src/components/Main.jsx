@@ -1,6 +1,8 @@
 import GWLogo from "./GWLogo";
 import UserStoryBar from "./UserStoryBar";
 import * as azdev from "azure-devops-node-api";
+import React, { useState, useEffect } from "react";
+
 
 function connectAzureDevops() {
     let orgUrl = "https://dev.azure.com/yourorgname";
@@ -10,43 +12,74 @@ function connectAzureDevops() {
     return connection;
 }
 
+function getChildrenWorkItems(workItem){
+    let childWorkItems = []
+    workItem.relations.forEach(element => {
+        if (element.attributes.name === "Child"){
+            let split_url = element.url.split("/");
+            let workItemNumber = Number(split_url[split_url.length - 1]);
+            childWorkItems.push(workItemNumber);
+        }
+    });
+    return childWorkItems;
+}
+
+function getTask(workItemNumber, connection){
+    let nameVal = null;
+    let estimateVal = null;
+
+    connection.getWorkItemTrackingApi().then((workItemTrackingApi) => {
+        workItemTrackingApi.getWorkItem(workItemNumber).then( (workItem) => {
+            nameVal = workItem.fields["System.Title"];
+            estimateVal = workItem.fields["Microsoft.VSTS.Scheduling.StoryPoints"];
+        });
+    });
+    return { name: nameVal, estimate: estimateVal }
+}
+
 function Main() {
 
-    let connection = connectAzureDevops();
+    let initTasks = [
+        {
+            name: "Rendering...",
+            estimate: 4,
+            progress: 100
+        }
+    ]
 
-    var userStory = {
-        name : "OOXML Lite Camera",
-        tasks: [
-            {
-                name: "Make BDD's",
-                estimate: 4,
-                progress: 100
-            },{
-                name: "Integrate",
-                estimate: 6,
-                progress: 1
-            },{
-                name: "Test",
-                estimate: 2,
-                progress: 0
-            },{
-                name: "Review",
-                estimate: 1,
-                progress: 0
-            },{
-                name: "Extra Crap",
-                estimate: 1,
-                progress: 0
-            }
-        ]
+    let workItemNumber = 114352;
+
+    const [userStoryName, setUserStoryName] = React.useState("")
+    const [relationships, setRelationships] = React.useState(null);
+    const [tasks, setTasks] = React.useState(initTasks);
+
+    let connection = connectAzureDevops();
+    connection.getWorkItemTrackingApi().then((workItemTrackingApi) => {
+        workItemTrackingApi.getWorkItem(workItemNumber, undefined, undefined, "Relations").then( (workItem) => {
+            console.log(workItem);
+            setUserStoryName(workItem.fields["System.Title"]);
+            setRelationships(getChildrenWorkItems(workItem));
+        });
+
+    });
+
+
+    let list = [];
+    if (relationships != null){
+        relationships.forEach(element => {
+            let task = getTask(element, connection);
+            console.log(task);
+            list.push(task);
+        });
     }
+    setTasks(list);
 
     return (
         <>
             <GWLogo />
             <UserStoryBar
-                name={ userStory.name }
-                tasks={ userStory.tasks } />
+                name={ userStoryName }
+                tasks={ tasks } />
         </>
     );
 }
