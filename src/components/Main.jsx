@@ -48,9 +48,6 @@ function Main() {
     const [tasks, setTasks] = React.useState(initTasks);
 
     useEffect(() => {
-
-        const connnect = async () => {
-
             let connection = connectAzureDevops();
 
             //Get User Story Name And Relationships
@@ -75,10 +72,6 @@ function Main() {
 
                 });
             });
-        }
-
-        connnect();
-
     }, []);
 
     return (
