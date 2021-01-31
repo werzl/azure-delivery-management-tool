@@ -3,7 +3,6 @@ import UserStoryBar from "./UserStoryBar";
 import * as azdev from "azure-devops-node-api";
 import React, { useState, useEffect } from "react";
 
-
 function connectAzureDevops() {
     let orgUrl = "https://dev.azure.com/yourorgname";
     let token = "AZURE_PERSONAL_ACCESS_TOKEN";
@@ -17,24 +16,24 @@ function getChildrenWorkItems(workItem){
     workItem.relations.forEach(element => {
         if (element.attributes.name === "Child"){
             let split_url = element.url.split("/");
-            let workItemNumber = Number(split_url[split_url.length - 1]);
-            childWorkItems.push(workItemNumber);
+            let childWorkItemNumber = Number(split_url[split_url.length - 1]);
+            childWorkItems.push(childWorkItemNumber);
         }
     });
     return childWorkItems;
 }
 
 function getTask(workItemNumber, connection){
-    let nameVal = null;
-    let estimateVal = null;
+    let name = null;
+    let estimate = null;
 
     connection.getWorkItemTrackingApi().then((workItemTrackingApi) => {
         workItemTrackingApi.getWorkItem(workItemNumber).then( (workItem) => {
-            nameVal = workItem.fields["System.Title"];
-            estimateVal = workItem.fields["Microsoft.VSTS.Scheduling.StoryPoints"];
+            name = workItem.fields["System.Title"];
+            estimate = workItem.fields["Microsoft.VSTS.Scheduling.StoryPoints"];
         });
     });
-    return { name: nameVal, estimate: estimateVal }
+    return { name: name, estimate: estimate }
 }
 
 function Main() {
@@ -60,9 +59,7 @@ function Main() {
             setUserStoryName(workItem.fields["System.Title"]);
             setRelationships(getChildrenWorkItems(workItem));
         });
-
     });
-
 
     let list = [];
     if (relationships != null){
