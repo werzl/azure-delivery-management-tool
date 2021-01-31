@@ -41,7 +41,7 @@ function Main() {
     let initTasks = [
         {
             name: "Rendering...",
-            estimate: 4,
+            estimate: 1,
             progress: 100
         }
     ]
@@ -50,17 +50,21 @@ function Main() {
 
     const [userStoryName, setUserStoryName] = React.useState("")
     const [relationships, setRelationships] = React.useState(null);
-    const [tasks, setTasks] = React.useState(initTasks);
+    const [tasks, setTasks]                 = React.useState(initTasks);
 
     let connection = connectAzureDevops();
+
+    //Get User Story Name And Relationships
     connection.getWorkItemTrackingApi().then((workItemTrackingApi) => {
         workItemTrackingApi.getWorkItem(workItemNumber, undefined, undefined, "Relations").then( (workItem) => {
             console.log(workItem);
             setUserStoryName(workItem.fields["System.Title"]);
-            setRelationships(getChildrenWorkItems(workItem));
+            let childWorkItems = getChildrenWorkItems(workItem)
+            setRelationships(childWorkItems);
         });
     });
 
+    //Get Tasks
     let list = [];
     if (relationships != null){
         relationships.forEach(element => {
@@ -77,6 +81,7 @@ function Main() {
             <UserStoryBar
                 name={ userStoryName }
                 tasks={ tasks } />
+            
         </>
     );
 }
