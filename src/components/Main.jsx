@@ -5,14 +5,15 @@ import * as azdev from "azure-devops-node-api";
 function connectAzureDevops() {
     let orgUrl = "https://dev.azure.com/yourorgname";
     let token = "AZURE_PERSONAL_ACCESS_TOKEN";
-    let authHandler = azdev.getPersonalAccessTokenHandler(token); 
+    let authHandler = azdev.getPersonalAccessTokenHandler(token);
     let connection = new azdev.WebApi(orgUrl, authHandler);
+    console.log("connected to azure");
     return connection;
 }
 
-function Main() {
+const connection = connectAzureDevops();
 
-    let connection = connectAzureDevops();
+function Main() {
 
     var userStory = {
         name : "OOXML Lite Camera",
